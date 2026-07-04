@@ -704,6 +704,11 @@ class TargetAndroid(Target):
             if p4a_commit != 'HEAD':
                 cmd(["git", "reset", "--hard", p4a_commit], cwd=p4a_dir)
 
+        if system_p4a_dir:
+            # it is the caller's responsibility to have already installed (pinned) dependencies
+            self.buildozer.info('Skipping installation of deps of p4a, as using system p4a')
+            return
+
         # also install dependencies (currently, only setup.py knows about it)
         # let's extract them.
         try:
@@ -720,7 +725,7 @@ class TargetAndroid(Target):
         options = ["--user"]
         if "VIRTUAL_ENV" in os.environ or "CONDA_PREFIX" in os.environ:
             options = []
-        cmd([executable, "-m", "pip", "install", "-q", *options, *deps])
+        cmd([executable, "-m", "pip", "install", *options, *deps])
 
     def compile_platform(self):
         app_requirements = self.buildozer.config.getlist(

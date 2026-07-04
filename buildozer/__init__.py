@@ -514,7 +514,9 @@ class Buildozer:
 
     def _install_application_requirement(self, module):
         self._ensure_virtualenv()
-        self.debug('Install requirement {} in virtualenv'.format(module))
+        self.info('Install requirement {} in virtualenv'.format(module))
+        self.error("buildozer tried to pip install something")  # we want to explicitly install pkgs ourselves
+        exit(1)
         self.cmd(
             ["pip", "install", f"--target={self.applibs_dir}", module],
             env=self.env_venv,
