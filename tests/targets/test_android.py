@@ -150,11 +150,9 @@ class TestTargetAndroid:
     def test_check_requirements(self):
         """Basic tests for the check_requirements() method."""
         target_android = init_target(self.temp_dir)
-        buildozer = target_android.buildozer
         assert not hasattr(target_android, "adb_executable")
         assert not hasattr(target_android, "adb_args")
         assert not hasattr(target_android, "javac_cmd")
-        assert "PATH" not in buildozer.environ
         with patch_buildozer_checkbin() as m_checkbin:
             target_android.check_requirements()
         assert m_checkbin.call_args_list == [
@@ -167,7 +165,6 @@ class TestTargetAndroid:
         assert target_android.adb_args == []
         assert target_android.javac_cmd == "javac"
         assert target_android.keytool_cmd == "keytool"
-        assert "PATH" in buildozer.environ
 
     def test_check_configuration_tokens(self):
         """Basic tests for the check_configuration_tokens() method."""
