@@ -11,7 +11,6 @@ WSL = 'microsoft' in uname()[2].lower()
 
 ANDROID_API = '31'
 ANDROID_MINAPI = '21'
-APACHE_ANT_VERSION = '1.9.4'
 
 # This constant should *not* be updated, it is used only in the case
 # that python-for-android cannot provide a recommendation, which in
@@ -231,17 +230,6 @@ class TargetAndroid(Target):
                     'android-ndk-r{0}'.format(version))
 
     @property
-    def apache_ant_dir(self):
-        directory = expanduser(self.buildozer.config.getdefault(
-            'app', 'android.ant_path', ''))
-        if directory:
-            return realpath(directory)
-        version = self.buildozer.config.getdefault('app', 'android.ant',
-                                                   APACHE_ANT_VERSION)
-        return join(self.buildozer.global_platform_dir,
-                    'apache-ant-{0}'.format(version))
-
-    @property
     def sdkmanager_path(self):
         sdkmanager_path = join(
             self.android_sdk_dir, 'cmdline-tools', 'bin', 'sdkmanager')
@@ -292,14 +280,6 @@ class TargetAndroid(Target):
             "app", "android.adb_args", "")
         self.adb_args = shlex.split(adb_args)
 
-        # Need to add internally installed ant to path for external tools
-        # like adb to use
-        path = [join(self.apache_ant_dir, 'bin')]
-        if 'PATH' in self.buildozer.environ:
-            path.append(self.buildozer.environ['PATH'])
-        else:
-            path.append(os.environ['PATH'])
-        self.buildozer.environ['PATH'] = ':'.join(path)
         checkbin = self.buildozer.checkbin
         checkbin('Git (git)', 'git')
         checkbin('Cython (cython)', 'cython')
@@ -335,26 +315,6 @@ class TargetAndroid(Target):
             return join(self.buildozer.environ['JAVA_HOME'], 'bin', s)
         else:
             return s
-
-    def _install_apache_ant(self):
-        ant_dir = self.apache_ant_dir
-        if self.buildozer.file_exists(ant_dir):
-            self.buildozer.info('Apache ANT found at {0}'.format(ant_dir))
-            return ant_dir
-
-        if not os.path.exists(ant_dir):
-            os.makedirs(ant_dir)
-
-        self.buildozer.info('Android ANT is missing, downloading')
-        archive = 'apache-ant-{0}-bin.tar.gz'.format(APACHE_ANT_VERSION)
-        url = 'https://archive.apache.org/dist/ant/binaries/'
-        self.buildozer.download(url,
-                                archive,
-                                cwd=ant_dir)
-        self.buildozer.file_extract(archive,
-                                    cwd=ant_dir)
-        self.buildozer.info('Apache ANT installation done.')
-        return ant_dir
 
     def _install_android_sdk(self):
         sdk_dir = self.android_sdk_dir
@@ -613,7 +573,6 @@ class TargetAndroid(Target):
 
     def install_platform(self):
         self._install_p4a()
-        self._install_apache_ant()
         self._install_android_sdk()
         self._install_android_ndk()
         self._install_android_packages()

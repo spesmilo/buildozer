@@ -9,7 +9,7 @@ import tempfile
 from unittest import mock
 
 from buildozer.targets.android import (
-    TargetAndroid, DEFAULT_ANDROID_NDK_VERSION, MSG_P4A_RECOMMENDED_NDK_ERROR
+    DEFAULT_ANDROID_NDK_VERSION, MSG_P4A_RECOMMENDED_NDK_ERROR
 )
 
 
@@ -139,30 +139,6 @@ class TestBuildozer(unittest.TestCase):
             with self.assertRaises(SystemExit):
                 buildozer.run_command(args)
         assert mock_stdout.getvalue() == 'Unknown command/target {}\n'.format(command)
-
-    def test_android_ant_path(self):
-        """
-        Verify that the selected ANT path is being used from the spec file
-        """
-        my_ant_path = '/my/ant/path'
-
-        buildozer = Buildozer(filename=self.default_specfile_path(), target='android')
-        buildozer.config.set('app', 'android.ant_path', my_ant_path)  # Set ANT path
-        target = TargetAndroid(buildozer=buildozer)
-
-        # Mock first run
-        with mock.patch('buildozer.Buildozer.download') as download, \
-                mock.patch('buildozer.Buildozer.file_extract') as m_file_extract, \
-                mock.patch('os.makedirs'):
-            ant_path = target._install_apache_ant()
-        assert m_file_extract.call_args_list == [mock.call(mock.ANY, cwd='/my/ant/path')]
-        assert ant_path == my_ant_path
-        assert download.call_args_list == [
-            mock.call("https://archive.apache.org/dist/ant/binaries/", mock.ANY, cwd=my_ant_path)]
-        # Mock ant already installed
-        with mock.patch.object(Buildozer, 'file_exists', return_value=True):
-            ant_path = target._install_apache_ant()
-        assert ant_path == my_ant_path
 
     def test_cmd_unicode_decode(self):
         """
